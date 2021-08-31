@@ -38,7 +38,7 @@ func Migrate() {
 		driver,
 	)
 
-	if err := m.Up(); err != nil {
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatal(err)
 	}
 }
