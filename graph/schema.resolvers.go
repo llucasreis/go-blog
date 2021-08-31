@@ -6,20 +6,26 @@ package graph
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/llucasreis/go-blog/graph/generated"
 	"github.com/llucasreis/go-blog/graph/model"
+	"github.com/llucasreis/go-blog/internal/posts"
 )
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input model.NewPost) (*model.Post, error) {
-	var post model.Post
-	var user model.User
+	var post posts.Post
+
 	post.Content = input.Content
 	post.Title = input.Title
-	user.Name = "user"
-	post.User = &user
 
-	return &post, nil
+	postID := post.Save()
+
+	return &model.Post{
+		ID:      strconv.FormatInt(postID, 10),
+		Title:   post.Title,
+		Content: post.Content,
+	}, nil
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (string, error) {
@@ -35,15 +41,18 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 }
 
 func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
-	var posts []*model.Post
-	dummyPost := model.Post{
-		Title:   "our dummy post",
-		Content: "this is a dummy post",
-		User:    &model.User{Name: "user"},
-	}
-	posts = append(posts, &dummyPost)
+	var resultPosts []*model.Post
+	dbPosts := posts.GetAll()
 
-	return posts, nil
+	for _, post := range dbPosts {
+		resultPosts = append(resultPosts, &model.Post{
+			ID:      post.ID,
+			Title:   post.Title,
+			Content: post.Content,
+		})
+	}
+
+	return resultPosts, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
