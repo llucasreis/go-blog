@@ -13,7 +13,7 @@ import (
 var Db *sql.DB
 
 func InitDB() {
-	db, err := sql.Open("mysql", "root:dbpass@tcp(localhost)/goblog")
+	db, err := sql.Open("mysql", "root:mysql@tcp(localhost:3306)/goblog")
 
 	if err != nil {
 		log.Panic(err)
@@ -38,7 +38,7 @@ func Migrate() {
 		driver,
 	)
 
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+	if err := m.Up(); err != nil {
 		log.Fatal(err)
 	}
 }
